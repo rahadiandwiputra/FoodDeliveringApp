@@ -5,6 +5,8 @@ VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService", "UserService\UserService.csproj", "{6395086A-0E5C-4ABB-B467-36FE82ADA9F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodDeleveryApp.Data", "FoodDeleveryApp.Data\FoodDeleveryApp.Data.csproj", "{8B6EF60C-11DA-4162-8DC7-B00A6333D232}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{6395086A-0E5C-4ABB-B467-36FE82ADA9F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6395086A-0E5C-4ABB-B467-36FE82ADA9F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6395086A-0E5C-4ABB-B467-36FE82ADA9F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B6EF60C-11DA-4162-8DC7-B00A6333D232}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B6EF60C-11DA-4162-8DC7-B00A6333D232}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B6EF60C-11DA-4162-8DC7-B00A6333D232}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B6EF60C-11DA-4162-8DC7-B00A6333D232}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
