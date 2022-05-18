@@ -6,15 +6,7 @@ namespace UserService.GraphQL
 {
     public class Query
     {
-        [Authorize] // dapat diakses kalau sudah login
-        public IQueryable<UserData> GetUsers([Service] FoodDeliveryContext context) =>
-            context.Users.Select(p => new UserData()
-            {
-                Id = p.Id,
-                FullName = p.FullName,
-                Email = p.Email,
-                Username = p.Username
-            });
+        
         [Authorize]
         public IQueryable<UserData> GetUsersCondition([Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
         {
