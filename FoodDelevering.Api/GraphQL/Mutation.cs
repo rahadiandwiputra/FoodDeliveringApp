@@ -72,5 +72,73 @@ namespace FoodDelevering.Api.GraphQL
             }
             return await Task.FromResult(product);
         }
+        /*---------------------------------- CRUD COURIER ----------------------------------*/
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<Courier> AddCourierAsync(
+            CourierInput input,
+            [Service] FoodDeliveryContext context)
+        {
+
+            // EF
+            var courier = new Courier
+            {
+                Name = input.Name,
+                Address = input.Address,
+                City = input.City,
+                Phone = input.Phone,
+                Completed = input.Completed,
+            };
+
+            var ret = context.Couriers.Add(courier);
+            await context.SaveChangesAsync();
+
+            return ret.Entity;
+        }
+
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<Courier> GetCourierByIdAsync(
+            int id,
+            [Service] FoodDeliveryContext context)
+        {
+            var courier = context.Couriers.Where(o => o.Id == id).FirstOrDefault();
+
+            return await Task.FromResult(courier);
+        }
+
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<Courier> UpdateCourierAsync(
+            CourierInput input,
+            [Service] FoodDeliveryContext context)
+        {
+            var courier = context.Couriers.Where(o => o.Id == input.Id).FirstOrDefault();
+            if (courier != null)
+            {
+                courier.Name = input.Name;
+                courier.Address = input.Address;
+                courier.City = input.City;
+                courier.Phone = input.Phone;
+                courier.Completed = input.Completed;
+
+                context.Couriers.Update(courier);
+                await context.SaveChangesAsync();
+            }
+
+
+            return await Task.FromResult(courier);
+        }
+
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<Courier> DeleteCourierByIdAsync(
+            int id,
+            [Service] FoodDeliveryContext context)
+        {
+            var courier = context.Couriers.Where(o => o.Id == id).FirstOrDefault();
+            if (courier != null)
+            {
+                context.Couriers.Remove(courier);
+                await context.SaveChangesAsync();
+            }
+            return await Task.FromResult(courier);
+        }
     }
 }

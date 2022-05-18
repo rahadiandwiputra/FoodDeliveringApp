@@ -1,6 +1,11 @@
 ﻿namespace FoodDelevering.Api.GraphQL
 {
-    public class ProductInput
-    {
-    }
+    public record ProductInput
+    (
+        int? Id,
+        string Name,
+        int Stock,
+        double Price,
+        int CategoryId
+    );
 }
