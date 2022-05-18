@@ -10,6 +10,50 @@ namespace UserService.GraphQL
 {
     public class Mutation
     {
+        [Authorize(Roles = new[] { "ADMIN" })]
+        public async Task<UserData> UpdateUserAsync(
+            UpdateUser input,
+            [Service] FoodDeliveryContext context
+            )
+        {
+            var user = context.Users.Where(s=>s.Id == input.Id).FirstOrDefault();
+            if (user != null)
+            {
+                user.FullName = input.FullName;
+                user.Email = input.Email;
+                user.Username = input.UserName;
+                user.Password = BCrypt.Net.BCrypt.HashPassword(input.Password);
+                context.Users.Update(user);
+                await context.SaveChangesAsync();
+            }
+            return await Task.FromResult(new UserData
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                FullName = user.FullName
+            });
+        }
+        [Authorize(Roles = new[] { "ADMIN" })]
+        public async Task<UserData> DeleteUserAsync(
+            int id,
+            [Service] FoodDeliveryContext context
+            )
+        {
+            var user = context.Users.Where(s => s.Id == id).FirstOrDefault();
+            if (user != null)
+            {
+                context.Users.Remove(user);
+                await context.SaveChangesAsync();
+            }
+            return await Task.FromResult(new UserData
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                FullName = user.FullName
+            });
+        }
         public async Task<UserData> RegisterUserAsync(
             RegisterUser input,
             [Service] FoodDeliveryContext context)
