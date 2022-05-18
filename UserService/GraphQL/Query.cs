@@ -1,5 +1,6 @@
 ﻿using FoodDeleveryApp.Data.Models;
 using HotChocolate.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace UserService.GraphQL
 {
@@ -14,5 +15,45 @@ namespace UserService.GraphQL
                 Email = p.Email,
                 Username = p.Username
             });
+        [Authorize]
+        public IQueryable<UserData> GetUsersCondition([Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
+        {
+            var userName = claimsPrincipal.Identity.Name;
+            // check manager role ?
+            var adminRole = claimsPrincipal.Claims.Where(o => o.Type == ClaimTypes.Role && o.Value == "ADMIN").FirstOrDefault();
+            var user = context.Users.Where(o => o.Username == userName).FirstOrDefault();
+            if (user != null)
+            {
+                if (adminRole != null)
+                {
+                    Console.WriteLine("Ini Admin");
+                    return context.Users.Select(p => new UserData()
+                    {
+                        Id = p.Id,
+                        FullName = p.FullName,
+                        Email = p.Email,
+                        Username = p.Username
+                    });
+                }
+                else
+                {
+                    Console.WriteLine("Ini Bukan Admin");
+
+                     var u = context.Users.Where(o => o.Id == user.Id).Select(p=>new UserData()
+                     {
+                         Id=p.Id,
+                         FullName=p.FullName,
+                         Email=p.Email, 
+                         Username=p.Username
+                     });
+                    return u;
+                }
+            }
+            return context.Users.Select(p => new UserData()
+            {
+                FullName = "",
+            });
+        }
+
     }
 }

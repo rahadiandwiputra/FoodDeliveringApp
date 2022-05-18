@@ -1,4 +1,5 @@
 ﻿using FoodDeleveryApp.Data.Models;
+using HotChocolate.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -85,6 +86,31 @@ namespace UserService.GraphQL
             }
 
             return await Task.FromResult(new UserToken(null, null, Message: "Username or password was invalid"));
+        }
+
+        [Authorize]
+        public async Task<ResponseChangePassword> ChangePasswordAsync(
+            ChangePassword input,
+            ClaimsPrincipal claimsPrincipal,// setting token
+            [Service] FoodDeliveryContext context) // EF
+        {
+            var userName = claimsPrincipal.Identity.Name;
+
+            var user = context.Users.Where(o => o.Username == userName).FirstOrDefault();
+            bool valid = BCrypt.Net.BCrypt.Verify(input.CurrentPassword, user.Password);
+
+            if (valid)
+            {
+                if (input.NewPassword != input.ConfirmPassword)
+                {
+                    return await Task.FromResult(new ResponseChangePassword(Message: "Current Password And Confirmation Password Are Not The Same", Created: DateTime.Now.ToString()));
+                }
+                user.Password = BCrypt.Net.BCrypt.HashPassword(input.ConfirmPassword);
+                context.Users.Update(user);
+                context.SaveChangesAsync();
+                return await Task.FromResult(new ResponseChangePassword(Message: "Password Has Been Updated", Created: DateTime.Now.ToString()));
+            }
+            return await Task.FromResult(new ResponseChangePassword(Message: "Failed To Update Password", Created: DateTime.Now.ToString()));
         }
     }
 }
