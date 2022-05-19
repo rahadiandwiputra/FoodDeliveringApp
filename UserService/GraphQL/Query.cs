@@ -18,7 +18,6 @@ namespace UserService.GraphQL
             {
                 if (adminRole != null)
                 {
-                    Console.WriteLine("Ini Admin");
                     return context.Users.Select(p => new UserData()
                     {
                         Id = p.Id,
@@ -29,8 +28,6 @@ namespace UserService.GraphQL
                 }
                 else
                 {
-                    Console.WriteLine("Ini Bukan Admin");
-
                      var u = context.Users.Where(o => o.Id == user.Id).Select(p=>new UserData()
                      {
                          Id=p.Id,
@@ -45,6 +42,16 @@ namespace UserService.GraphQL
             {
                 FullName = "",
             });
+        }
+        [Authorize]
+        public IQueryable<Profile> GetProfileCondition([Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
+        {
+            var userName = claimsPrincipal.Identity.Name;
+            // check manager role ?
+            var user = context.Users.Where(o => o.Username == userName).FirstOrDefault();
+
+            var profiles = context.Profiles.Where(o => o.UserId == user.Id);
+            return profiles.AsQueryable();
         }
 
     }

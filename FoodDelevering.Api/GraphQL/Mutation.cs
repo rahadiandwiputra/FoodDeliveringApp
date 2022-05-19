@@ -72,7 +72,7 @@ namespace FoodDelevering.Api.GraphQL
             }
             return await Task.FromResult(product);
         }
-        /*---------------------------------- CRUD COURIER ----------------------------------*/
+        /*---------------------------------- CRUD COURIER ----------------------------------*//*
         [Authorize(Roles = new[] { "MANAGER" })]
         public async Task<Courier> AddCourierAsync(
             CourierInput input,
@@ -139,6 +139,6 @@ namespace FoodDelevering.Api.GraphQL
                 await context.SaveChangesAsync();
             }
             return await Task.FromResult(courier);
-        }
+        }*/
     }
 }

@@ -54,6 +54,54 @@ namespace UserService.GraphQL
                 FullName = user.FullName
             });
         }
+
+        [Authorize(Roles = new[] { "ADMIN" })]
+        public async Task<UserData> CreateUserConditionAsync(
+            CreateUser input,
+            [Service] FoodDeliveryContext context)
+        {
+            var user = context.Users.Where(o => o.Username == input.UserName).FirstOrDefault();
+            if (user != null)
+            {
+                return await Task.FromResult(new UserData());
+            }
+            var newUser = new User
+            {
+                FullName = input.FullName,
+                Email = input.Email,
+                Username = input.UserName,
+                Password = BCrypt.Net.BCrypt.HashPassword(input.Password) // encrypt password
+            };
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync();
+
+            var newProfile = new Profile
+            {
+                UserId = newUser.Id,
+                Name = newUser.FullName,
+            };
+            context.Profiles.Add(newProfile);
+
+            var newUserRole = new UserRole
+            {
+                RoleId = input.RoleId,
+                UserId = newUser.Id,
+            };
+            context.UserRoles.Add(newUserRole);
+            // EF
+            await context.SaveChangesAsync();
+
+            return await Task.FromResult(new UserData
+            {
+                Id = newUser.Id,
+                Username = newUser.Username,
+                Email = newUser.Email,
+                FullName = newUser.FullName
+            });
+        }
+
+
+        // By Default Register Sebagai Buyer
         public async Task<UserData> RegisterUserAsync(
             RegisterUser input,
             [Service] FoodDeliveryContext context)
@@ -70,9 +118,22 @@ namespace UserService.GraphQL
                 Username = input.UserName,
                 Password = BCrypt.Net.BCrypt.HashPassword(input.Password) // encrypt password
             };
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync();
 
+            var newProfile = new Profile
+            {
+                UserId = newUser.Id,
+                Name = newUser.FullName,
+            };
+            context.Profiles.Add(newProfile);
+            var newUserRole = new UserRole
+            {
+                RoleId = 2,
+                UserId = newUser.Id,
+            };
+            context.UserRoles.Add(newUserRole);
             // EF
-            var ret = context.Users.Add(newUser);
             await context.SaveChangesAsync();
 
             return await Task.FromResult(new UserData
@@ -155,6 +216,46 @@ namespace UserService.GraphQL
                 return await Task.FromResult(new ResponseChangePassword(Message: "Password Has Been Updated", Created: DateTime.Now.ToString()));
             }
             return await Task.FromResult(new ResponseChangePassword(Message: "Failed To Update Password", Created: DateTime.Now.ToString()));
+        }
+
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<string> DeleteCourierAsync(int id, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
+        {
+            var user = context.Users.FirstOrDefault(o => o.Id == id);
+            var courier = context.UserRoles.FirstOrDefault(s => s.UserId == user.Id);
+            var profile = context.Profiles.FirstOrDefault(s => s.UserId == user.Id);
+            if (courier == null) return "Courier Data Notfound!";
+            if (courier.RoleId != 4) return "This Is Not Courier Data";
+            if (user != null && courier.RoleId == 4)
+            {
+                context.Profiles.Remove(profile);
+                context.UserRoles.Remove(courier);
+                context.Users.Remove(user);
+                await context.SaveChangesAsync();
+                return "Courier Data Deleted";
+            }
+            //if (user == null) return "Users Data Notfound!";
+
+            return "Courier Data Is Not Deleted";
+        }
+        [Authorize]
+        public async Task<ProfileInput1> UpdateProfileAsync(ProfileInput1 input, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
+        {
+            var userName = claimsPrincipal.Identity.Name;
+            var user = context.Users.Where(u => u.Username == userName).FirstOrDefault();
+            if (user == null) return new ProfileInput1(0,"", "", "","");
+            
+            var profile = context.Profiles.Where(p => p.UserId == user.Id).FirstOrDefault();
+            profile.Name = input.Name;
+            profile.City = input.City;
+            profile.Address = input.Address;
+            profile.Phone = input.Phone;
+            context.Profiles.Update(profile);
+            user.FullName = input.Name;
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+
+            return input;
         }
     }
 }
