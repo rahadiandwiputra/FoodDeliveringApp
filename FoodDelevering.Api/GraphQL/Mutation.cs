@@ -1,5 +1,6 @@
 ﻿using FoodDeleveryApp.Data.Models;
 using HotChocolate.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FoodDelevering.Api.GraphQL
 {
@@ -73,12 +74,60 @@ namespace FoodDelevering.Api.GraphQL
             return await Task.FromResult(product);
         }
         /*---------------------------------- ORDER API ----------------------------------*/
-        /*[Authorize(Roles = new[] { "BUYER" })]
-        public async Task<Order> AddOrderAsync(
-            )
+        [Authorize(Roles = new[] { "BUYER" })]
+        public async Task<OrderOutput> AddOrderAsync(
+            OrderData input, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
         {
+            using var transaction = context.Database.BeginTransaction();
 
-        }*/
+            var userName = claimsPrincipal.Identity.Name;
+            try
+            {
+                var user = context.Users.Where(o=>o.Username == userName).FirstOrDefault();
+
+                if (user != null)
+                {
+                    Order order = new Order
+                    {
+                        Code = input.Code,
+                        UserId = user.Id,
+                        Status = "WAITING",
+                    };
+                    context.Orders.Add(order);
+
+                    foreach (var item in input.Details)
+                    {
+                        OrderDetail detail = new OrderDetail
+                        {
+                            OrderId = order.Id,
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity,
+                        };
+                        order.OrderDetails.Add(detail);
+                    }
+                    
+                    context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return new OrderOutput
+                    {
+                        TransactionDate = DateTime.Now.ToString(),
+                        Message = "Successfully made order data!"
+                    };
+                }
+                else
+                {
+                    throw new Exception("User Not Found");
+                }
+            }catch (Exception ex)
+            {
+                transaction.Rollback();
+                return new OrderOutput
+                {
+                    TransactionDate = DateTime.Now.ToString(),
+                    Message = ex.Message
+                };
+            }
+        }
         /*---------------------------------- CRUD COURIER ----------------------------------*//*
         [Authorize(Roles = new[] { "MANAGER" })]
         public async Task<Courier> AddCourierAsync(

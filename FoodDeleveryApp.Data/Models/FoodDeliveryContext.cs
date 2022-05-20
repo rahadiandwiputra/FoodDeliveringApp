@@ -74,10 +74,13 @@ namespace FoodDeleveryApp.Data.Models
 
                 entity.Property(e => e.Longitude).HasColumnType("decimal(18, 0)");
 
+                entity.Property(e => e.Status)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.Courier)
                     .WithMany(p => p.Orders)
                     .HasForeignKey(d => d.CourierId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Order_Courier");
 
                 entity.HasOne(d => d.User)

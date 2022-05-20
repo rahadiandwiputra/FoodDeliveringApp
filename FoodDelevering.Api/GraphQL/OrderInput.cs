@@ -1,6 +1,9 @@
 ﻿namespace FoodDelevering.Api.GraphQL
 {
-    public class OrderInput
-    {
-    }
+    public record OrderInput
+    (
+        string Code,
+        int UserId,
+        string Status
+    );
 }
