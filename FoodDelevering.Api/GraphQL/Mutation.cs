@@ -72,6 +72,13 @@ namespace FoodDelevering.Api.GraphQL
             }
             return await Task.FromResult(product);
         }
+        /*---------------------------------- ORDER API ----------------------------------*/
+        /*[Authorize(Roles = new[] { "BUYER" })]
+        public async Task<Order> AddOrderAsync(
+            )
+        {
+
+        }*/
         /*---------------------------------- CRUD COURIER ----------------------------------*//*
         [Authorize(Roles = new[] { "MANAGER" })]
         public async Task<Courier> AddCourierAsync(

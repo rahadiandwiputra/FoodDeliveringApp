@@ -99,7 +99,56 @@ namespace UserService.GraphQL
                 FullName = newUser.FullName
             });
         }
+        [Authorize(Roles = new[] { "MANAGER" })]
+        public async Task<UserData> CreateCourierConditionAsync(
+            CreateUser input,
+            [Service] FoodDeliveryContext context)
+        {
+            var user = context.Users.Where(o => o.Username == input.UserName).FirstOrDefault();
+            if (user != null)
+            {
+                return await Task.FromResult(new UserData());
+            }
+            var newUser = new User
+            {
+                FullName = input.FullName,
+                Email = input.Email,
+                Username = input.UserName,
+                Password = BCrypt.Net.BCrypt.HashPassword(input.Password) // encrypt password
+            };
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync();
+            var newCourier = new Courier
+            {
+                Name = newUser.FullName,
+                UserId = newUser.Id,
+            };
+            context.Couriers.Add(newCourier);
 
+            var newProfile = new Profile
+            {
+                UserId = newUser.Id,
+                Name = newUser.FullName,
+            };
+            context.Profiles.Add(newProfile);
+
+            var newUserRole = new UserRole
+            {
+                RoleId = input.RoleId,
+                UserId = newUser.Id,
+            };
+            context.UserRoles.Add(newUserRole);
+            // EF
+            await context.SaveChangesAsync();
+
+            return await Task.FromResult(new UserData
+            {
+                Id = newUser.Id,
+                Username = newUser.Username,
+                Email = newUser.Email,
+                FullName = newUser.FullName
+            });
+        }
 
         // By Default Register Sebagai Buyer
         public async Task<UserData> RegisterUserAsync(
@@ -224,11 +273,13 @@ namespace UserService.GraphQL
             var user = context.Users.FirstOrDefault(o => o.Id == id);
             var courier = context.UserRoles.FirstOrDefault(s => s.UserId == user.Id);
             var profile = context.Profiles.FirstOrDefault(s => s.UserId == user.Id);
+            var courier = context.Couriers.FirstOrDefault(s => s.UserId == user.Id);
             if (courier == null) return "Courier Data Notfound!";
             if (courier.RoleId != 4) return "This Is Not Courier Data";
             if (user != null && courier.RoleId == 4)
             {
                 context.Profiles.Remove(profile);
+                context.Couriers.Remove(Courier);
                 context.UserRoles.Remove(courier);
                 context.Users.Remove(user);
                 await context.SaveChangesAsync();
