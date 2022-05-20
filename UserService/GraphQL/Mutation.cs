@@ -273,13 +273,13 @@ namespace UserService.GraphQL
             var user = context.Users.FirstOrDefault(o => o.Id == id);
             var courier = context.UserRoles.FirstOrDefault(s => s.UserId == user.Id);
             var profile = context.Profiles.FirstOrDefault(s => s.UserId == user.Id);
-            var courier = context.Couriers.FirstOrDefault(s => s.UserId == user.Id);
+            var courierTable = context.Couriers.FirstOrDefault(s => s.UserId == user.Id);
             if (courier == null) return "Courier Data Notfound!";
             if (courier.RoleId != 4) return "This Is Not Courier Data";
             if (user != null && courier.RoleId == 4)
             {
                 context.Profiles.Remove(profile);
-                context.Couriers.Remove(Courier);
+                context.Couriers.Remove(courierTable);
                 context.UserRoles.Remove(courier);
                 context.Users.Remove(user);
                 await context.SaveChangesAsync();
