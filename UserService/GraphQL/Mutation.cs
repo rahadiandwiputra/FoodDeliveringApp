@@ -40,9 +40,14 @@ namespace UserService.GraphQL
             [Service] FoodDeliveryContext context
             )
         {
+            var courier = context.UserRoles.FirstOrDefault(s => s.UserId == id);
+            var profile = context.Profiles.FirstOrDefault(s => s.UserId == id);
+            var courierTable = context.Couriers.FirstOrDefault(s => s.UserId == id);
             var user = context.Users.Where(s => s.Id == id).FirstOrDefault();
             if (user != null)
             {
+                context.Profiles.Remove(profile);
+                context.UserRoles.Remove(courier);
                 context.Users.Remove(user);
                 await context.SaveChangesAsync();
             }

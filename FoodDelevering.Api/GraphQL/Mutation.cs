@@ -78,7 +78,6 @@ namespace FoodDelevering.Api.GraphQL
         public async Task<OrderOutput> AddOrderAsync(
             OrderData input, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
         {
-            using var transaction = context.Database.BeginTransaction();
 
             var userName = claimsPrincipal.Identity.Name;
             try
@@ -107,7 +106,6 @@ namespace FoodDelevering.Api.GraphQL
                     }
                     
                     context.SaveChangesAsync();
-                    await transaction.CommitAsync();
                     return new OrderOutput
                     {
                         TransactionDate = DateTime.Now.ToString(),
@@ -124,7 +122,6 @@ namespace FoodDelevering.Api.GraphQL
                 }
             }catch (Exception ex)
             {
-                transaction.Rollback();
                 return new OrderOutput
                 {
                     TransactionDate = DateTime.Now.ToString(),
