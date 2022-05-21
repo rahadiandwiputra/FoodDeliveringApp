@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FoodDeleveryApp.Data", "Foo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FoodDelevering.Api", "FoodDelevering.Api\FoodDelevering.Api.csproj", "{375909B1-4E9E-42A3-993F-7E5D9C9000AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcess", "OrderProcess\OrderProcess.csproj", "{22A6BD5F-6B4F-4161-A5E2-99595F1FC564}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcess", "OrderProcess\OrderProcess.csproj", "{22A6BD5F-6B4F-4161-A5E2-99595F1FC564}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{0693689E-E77E-4005-B176-3C2F75EAB3BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{22A6BD5F-6B4F-4161-A5E2-99595F1FC564}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22A6BD5F-6B4F-4161-A5E2-99595F1FC564}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22A6BD5F-6B4F-4161-A5E2-99595F1FC564}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0693689E-E77E-4005-B176-3C2F75EAB3BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0693689E-E77E-4005-B176-3C2F75EAB3BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0693689E-E77E-4005-B176-3C2F75EAB3BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0693689E-E77E-4005-B176-3C2F75EAB3BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

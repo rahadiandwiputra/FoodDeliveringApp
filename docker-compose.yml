@@ -1,0 +1,39 @@
+version: '3.4'
+
+services:
+  userservice:
+    image: ${DOCKER_REGISTRY-}userservice
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+    networks:
+        - app-tier
+
+  orderprocess:
+    image: ${DOCKER_REGISTRY-}orderprocess
+    build:
+      context: .
+      dockerfile: OrderProcess/Dockerfile
+    networks:
+        - app-tier
+
+  fooddelevering.api:
+    image: ${DOCKER_REGISTRY-}fooddeleveringapi
+    build:
+      context: .
+      dockerfile: FoodDelevering.Api/Dockerfile
+    networks:
+        - app-tier
+  
+  mssqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+        - 1433:1433
+    environment:
+        SA_PASSWORD: 'Rahadian1997'
+        ACCEPT_EULA: 'Y'   
+    networks:
+        - app-tier
+networks:
+  app-tier:
+    driver: bridge
