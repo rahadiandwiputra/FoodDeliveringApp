@@ -91,7 +91,7 @@ namespace FoodDelevering.Api.GraphQL
                     {
                         Code = input.Code,
                         UserId = user.Id,
-                        Status = "WAITING",
+                        Status = "ON PROCESS",
                     };
                     context.Orders.Add(order);
 
@@ -116,7 +116,11 @@ namespace FoodDelevering.Api.GraphQL
                 }
                 else
                 {
-                    throw new Exception("User Not Found");
+                    return new OrderOutput
+                    {
+                        TransactionDate = DateTime.Now.ToString(),
+                        Message = "User Not Found"
+                    };
                 }
             }catch (Exception ex)
             {
@@ -128,73 +132,83 @@ namespace FoodDelevering.Api.GraphQL
                 };
             }
         }
-        /*---------------------------------- CRUD COURIER ----------------------------------*//*
-        [Authorize(Roles = new[] { "MANAGER" })]
-        public async Task<Courier> AddCourierAsync(
-            CourierInput input,
-            [Service] FoodDeliveryContext context)
+        [Authorize(Roles = new [] { "COURIER" })]
+        public async Task<OrderOutput> AddTrackingOrderAsync(
+            Order input, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
         {
-
-            // EF
-            var courier = new Courier
+            try
             {
-                Name = input.Name,
-                Address = input.Address,
-                City = input.City,
-                Phone = input.Phone,
-                Completed = input.Completed,
-            };
-
-            var ret = context.Couriers.Add(courier);
-            await context.SaveChangesAsync();
-
-            return ret.Entity;
-        }
-
-        [Authorize(Roles = new[] { "MANAGER" })]
-        public async Task<Courier> GetCourierByIdAsync(
-            int id,
-            [Service] FoodDeliveryContext context)
-        {
-            var courier = context.Couriers.Where(o => o.Id == id).FirstOrDefault();
-
-            return await Task.FromResult(courier);
-        }
-
-        [Authorize(Roles = new[] { "MANAGER" })]
-        public async Task<Courier> UpdateCourierAsync(
-            CourierInput input,
-            [Service] FoodDeliveryContext context)
-        {
-            var courier = context.Couriers.Where(o => o.Id == input.Id).FirstOrDefault();
-            if (courier != null)
-            {
-                courier.Name = input.Name;
-                courier.Address = input.Address;
-                courier.City = input.City;
-                courier.Phone = input.Phone;
-                courier.Completed = input.Completed;
-
-                context.Couriers.Update(courier);
-                await context.SaveChangesAsync();
+                var userName = claimsPrincipal.Identity.Name;
+                var user = context.Users.Where(o=>o.Username == userName).FirstOrDefault();
+                var courier = context.Couriers.Where(o=>o.UserId == user.Id).FirstOrDefault();
+                //add tracking 
+                if (courier != null)
+                {
+                    var order = new Order
+                    {
+                        Id = input.Id,
+                        CourierId = courier.Id,
+                        Latitude = input.Latitude,
+                        Longitude = input.Longitude,
+                        Status = "ON DELIVERY"
+                    };
+                    context.Orders.Update(order);
+                    context.SaveChangesAsync();
+                    return new OrderOutput
+                    {
+                        TransactionDate = DateTime.Now.ToString(),
+                        Message = "Pesanan Sedang Dalam Perjalanan"
+                    };
+                }
+                return new OrderOutput
+                {
+                    TransactionDate = DateTime.Now.ToString(),
+                    Message = "Kurir Tidak Ditemukan"
+                };
             }
-
-
-            return await Task.FromResult(courier);
+            catch (Exception ex)
+            {
+                return new OrderOutput
+                {
+                    TransactionDate = DateTime.Now.ToString(),
+                    Message = ex.Message
+                };
+            }
+        }
+        [Authorize(Roles = new[] { "COURIER" })]
+        public async Task<OrderOutput> CompleteOrderAsync(
+            int id, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
+        {
+            try
+            {
+                var order = context.Orders.Where(o => o.Id == id).FirstOrDefault();
+                //add tracking 
+                if (order != null)
+                {
+                    order.Status = "COMPLETED";
+                    context.Orders.Update(order);
+                    context.SaveChangesAsync();
+                    return new OrderOutput
+                    {
+                        TransactionDate = DateTime.Now.ToString(),
+                        Message = "Pesanan Selesai Dikirim"
+                    };
+                }
+                return new OrderOutput
+                {
+                    TransactionDate = DateTime.Now.ToString(),
+                    Message = "Kurir Tidak Ditemukan"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new OrderOutput
+                {
+                    TransactionDate = DateTime.Now.ToString(),
+                    Message = ex.Message
+                };
+            }
         }
 
-        [Authorize(Roles = new[] { "MANAGER" })]
-        public async Task<Courier> DeleteCourierByIdAsync(
-            int id,
-            [Service] FoodDeliveryContext context)
-        {
-            var courier = context.Couriers.Where(o => o.Id == id).FirstOrDefault();
-            if (courier != null)
-            {
-                context.Couriers.Remove(courier);
-                await context.SaveChangesAsync();
-            }
-            return await Task.FromResult(courier);
-        }*/
     }
 }
