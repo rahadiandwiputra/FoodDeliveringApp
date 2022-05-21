@@ -9,7 +9,7 @@ namespace FoodDelevering.Api.GraphQL
         /*---------------------------------- CRUD PRODUCT ----------------------------------*/
         [Authorize(Roles = new[] { "MANAGER" })]
         public async Task<Product> AddProductAsync(
-            ProductInput input,
+            FoodInput input,
             [Service] FoodDeliveryContext context)
         {
 
@@ -41,7 +41,7 @@ namespace FoodDelevering.Api.GraphQL
 
         [Authorize(Roles = new[] { "MANAGER" })]
         public async Task<Product> UpdateProductAsync(
-            ProductInput input,
+            FoodInput input,
             [Service] FoodDeliveryContext context)
         {
             var product = context.Products.Where(o => o.Id == input.Id).FirstOrDefault();
@@ -134,37 +134,60 @@ namespace FoodDelevering.Api.GraphQL
         }
         [Authorize(Roles = new [] { "COURIER" })]
         public async Task<OrderOutput> AddTrackingOrderAsync(
-            Order input, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
+            TrackingOrder input, [Service] FoodDeliveryContext context, ClaimsPrincipal claimsPrincipal)
         {
             try
             {
                 var userName = claimsPrincipal.Identity.Name;
                 var user = context.Users.Where(o=>o.Username == userName).FirstOrDefault();
                 var courier = context.Couriers.Where(o=>o.UserId == user.Id).FirstOrDefault();
+                var orderId = context.Orders.Where(o=>o.Id == input.Id).FirstOrDefault();
                 //add tracking 
-                if (courier != null)
+                if (user!=null)
                 {
-                    var order = new Order
+                    if (courier!=null)
                     {
-                        Id = input.Id,
-                        CourierId = courier.Id,
-                        Latitude = input.Latitude,
-                        Longitude = input.Longitude,
-                        Status = "ON DELIVERY"
-                    };
-                    context.Orders.Update(order);
-                    context.SaveChangesAsync();
+                        if (orderId!=null)
+                        {
+                            orderId.CourierId = courier.Id;
+                            orderId.Latitude = input.Latitude;
+                            orderId.Longitude = input.Longitude;
+                            orderId.Status = "ON DELIVERY";
+                            context.Orders.Update(orderId);
+                            context.SaveChangesAsync();
+                            return new OrderOutput
+                            {
+                                TransactionDate = DateTime.Now.ToString(),
+                                Message = "Pesanan Sedang Dalam Perjalanan"
+                            };
+                        }
+                        else
+                        {
+                            return new OrderOutput
+                            {
+                                TransactionDate = DateTime.Now.ToString(),
+                                Message = "Order NotFound"
+                            };
+                        }
+
+                    }
+                    else
+                    {
+                        return new OrderOutput
+                        {
+                            TransactionDate = DateTime.Now.ToString(),
+                            Message = "Courier NotFound"
+                        };
+                    }
+                }
+                else
+                {
                     return new OrderOutput
                     {
                         TransactionDate = DateTime.Now.ToString(),
-                        Message = "Pesanan Sedang Dalam Perjalanan"
+                        Message = "User NotFound"
                     };
                 }
-                return new OrderOutput
-                {
-                    TransactionDate = DateTime.Now.ToString(),
-                    Message = "Kurir Tidak Ditemukan"
-                };
             }
             catch (Exception ex)
             {
@@ -182,7 +205,7 @@ namespace FoodDelevering.Api.GraphQL
             try
             {
                 var order = context.Orders.Where(o => o.Id == id).FirstOrDefault();
-                //add tracking 
+                //order completed
                 if (order != null)
                 {
                     order.Status = "COMPLETED";
